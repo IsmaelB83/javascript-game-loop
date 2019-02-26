@@ -1,38 +1,73 @@
-var box = document.getElementById('box'),
-    boxPos = 10,
-    boxVelocity = 0.40,
-    limit = 300,
-    lastFrameTimeMs = 0,
-    maxFPS = 60,
-    delta = 0,
-    timestep = 1000 / 60;
+var ctx = c.getContext("2d"), pTime = 0, mTime = 0, x = 0;
+ctx.font = "20px sans-serif";
 
-function update(delta) {
-    boxPos += boxVelocity * delta;
-    // Switch directions if we go too far
-    if (boxPos >= limit || boxPos <= 0) boxVelocity = -boxVelocity;
+// update canvas with some information and animation
+var fps = new FpsCtrl(12, function(e) {
+	ctx.clearRect(0, 0, c.width, c.height);
+	ctx.fillText("FPS: " + fps.frameRate() + 
+                 " Frame: " + e.frame + 
+                 " Time: " + (e.time - pTime).toFixed(1), 4, 30);
+	pTime = e.time;
+	var x = (pTime - mTime) * 0.1;
+	if (x > c.width) mTime = pTime;
+	ctx.fillRect(x, 50, 10, 10)
+})
+
+// start the loop
+fps.start();
+
+// UI
+bState.onclick = function() {
+	fps.isPlaying ? fps.pause() : fps.start();
+};
+
+sFPS.onchange = function() {
+	fps.frameRate(+this.value)
+};
+
+function FpsCtrl(fps, callback) {
+
+	var	delay = 1000 / fps,
+		time = null,
+		frame = -1,
+		tref;
+
+	function loop(timestamp) {
+		if (time === null) time = timestamp;
+		var seg = Math.floor((timestamp - time) / delay);
+		if (seg > frame) {
+			frame = seg;
+			callback({
+				time: timestamp,
+				frame: frame
+			})
+		}
+		tref = requestAnimationFrame(loop)
+	}
+
+	this.isPlaying = false;
+	
+	this.frameRate = function(newfps) {
+		if (!arguments.length) return fps;
+		fps = newfps;
+		delay = 1000 / fps;
+		frame = -1;
+		time = null;
+	};
+	
+	this.start = function() {
+		if (!this.isPlaying) {
+			this.isPlaying = true;
+			tref = requestAnimationFrame(loop);
+		}
+	};
+	
+	this.pause = function() {
+		if (this.isPlaying) {
+			cancelAnimationFrame(tref);
+			this.isPlaying = false;
+			time = null;
+			frame = -1;
+		}
+	};
 }
-
-function draw() {
-    box.style.left = boxPos + 'px';
-}
-
-let t0,t1;
-function mainLoop(timestamp) {
-    // Throttle the frame rate.    
-    if (timestamp < lastFrameTimeMs + (1000 / maxFPS)) {
-        requestAnimationFrame(mainLoop);
-        return;
-    }
-    delta += timestamp - lastFrameTimeMs;
-    lastFrameTimeMs = timestamp;
-
-    while (delta >= timestep) {
-        update(timestep);
-        delta -= timestep;
-    }
-    draw();
-    requestAnimationFrame(mainLoop);
-}
-
-requestAnimationFrame(mainLoop);
