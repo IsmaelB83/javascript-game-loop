@@ -5,9 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
+    <style>
+        body {font:16px sans-serif}
+    </style>
 </head>
 <body>
-    <div id="box" style="position: absolute; top: 10px; left: 10px; height: 50px; width: 50px; background-color: red;"></div>
+    <label>Framerate: <select id=sFPS>
+        <option>12</option>
+        <option>15</option>
+        <option>24</option>
+        <option>25</option>
+        <option>29.97</option>
+        <option>30</option>
+        <option>60</option>
+    </select></label><br>
+    <canvas id=c height=60></canvas><br>
+    <button id=bState>Start/Stop</button>
     <script src="index.js"></script>
 </body>
 </html>
